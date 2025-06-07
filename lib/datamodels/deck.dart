@@ -11,7 +11,7 @@ class Deck {
     required this.deckId,
     required this.title, 
     required this.flashcards, 
-    this.color = 0xe1e3e1
+    this.color = 0xFF42A5F5,
   }); 
 
   // convert deck to map to store 

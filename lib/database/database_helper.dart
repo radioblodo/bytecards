@@ -35,7 +35,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE decks (
         deckId TEXT PRIMARY KEY,
-        title TEXT
+        title TEXT,
         color INTEGER DEFAULT 0xFF42A5F5
       )
     ''');
@@ -73,6 +73,7 @@ class DatabaseHelper {
       decks.add(Deck(
         deckId: deck['deckId'],
         title: deck['title'],
+        color: deck['color'], // to make the color change persistent
         flashcards: await getFlashcards(deck['deckId']),
       ));
     }

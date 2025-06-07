@@ -1,0 +1,21 @@
+{
+  "@@locale": "zh",
+  "appTitle": "字卡",
+  "settings": "设置",
+  "home": "首页",
+  "statistics": "统计",
+  "reminderFrequency": "提醒频率",
+  "language": "语言",
+  "appTheme": "应用主题",
+  "daily": "每天",
+  "weekly": "每周",
+  "monthly": "每月",
+  "english": "英文",
+  "mandarin": "中文",
+  "selectTheme": "选择主题",
+  "light": "浅色",
+  "dark": "深色",
+  "systemDefault": "系统默认",
+  "noDecksMessage": "你还没有卡组。点击 + 创建一个。",
+  "generatedCards": "AI生成的卡片："
+}

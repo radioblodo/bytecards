@@ -1,0 +1,10 @@
+{
+  "zh": [
+    "unsupportedFormat",
+    "fileReadError",
+    "parseError",
+    "apiError",
+    "cardsAdded",
+    "confirmAddAll"
+  ]
+}
