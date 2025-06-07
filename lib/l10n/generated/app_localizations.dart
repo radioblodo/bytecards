@@ -98,6 +98,8 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  String get cancel;
+
   String get confirmAddAll;
 
   /// No description provided for @appTitle.

@@ -96,4 +96,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fileReadError => '文件读取错误';
+
+  @override
+  String get cancel => '取消';
 }

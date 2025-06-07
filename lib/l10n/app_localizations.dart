@@ -241,6 +241,8 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm & Add All to Deck'**
   String get confirmAddAll;
+
+  String get cancel;
 }
 
 class _AppLocalizationsDelegate

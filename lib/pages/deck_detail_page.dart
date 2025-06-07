@@ -24,102 +24,133 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
   List<Flashcard> _generatedFlashcards = [];
   bool _isGenerating = false;
 
-  // 1) Fire file picker
+  /// 1) Open file picker
   void _pickDocument() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'txt', 'docx'],
     );
-    if (result?.files.single.path != null) {
-      _generateFlashcardsFromAI(result!.files.single.path!);
+    final path = result?.files.single.path;
+    if (path != null) {
+      _generateFlashcardsFromAI(path);
     }
   }
 
-  // 2) Extract text, call OpenRouter, parse JSON
+  /// 2) Extract text, call AI, parse JSON
   Future<void> _generateFlashcardsFromAI(String filePath) async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _isGenerating = true);
 
-    // ── 1) extract raw text ───────────────────────────────
     String text;
     final ext = filePath.split('.').last.toLowerCase();
-    if (ext == 'pdf') {
-      final bytes = await File(filePath).readAsBytes();
-      final doc = PdfDocument(inputBytes: bytes);
-      text = PdfTextExtractor(doc).extractText();
-      doc.dispose();
-    } else if (ext == 'txt') {
-      text = await File(filePath).readAsString();
-    } else {
-      // unsupported
+
+    // ──  STEP 1: Extract text ─────────────────────────────────
+    try {
+      if (ext == 'pdf') {
+        print("🛠  Extracting PDF text from $filePath");
+        final bytes = await File(filePath).readAsBytes();
+        final doc = PdfDocument(inputBytes: bytes);
+        text = PdfTextExtractor(doc).extractText();
+        doc.dispose();
+      } else if (ext == 'txt') {
+        print("🛠  Reading TXT from $filePath");
+        text = await File(filePath).readAsString();
+      } else {
+        throw FormatException('Unsupported extension: .$ext');
+      }
+      print("✅ Extracted text length: ${text.length}");
+    } catch (e, st) {
+      debugPrint('❌ Text extraction error: $e\n$st');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.fileReadError)));
+      setState(() => _isGenerating = false);
+      return;
+    }
+
+    // ──  STEP 2: Call AI endpoint ───────────────────────────────
+    http.Response resp;
+    try {
+      print("🛰  Sending to AI…");
+      resp = await http.post(
+        Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization':
+              'Bearer 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',
+        },
+        body: jsonEncode({
+          'model': 'openai/gpt-3.5-turbo',
+          'messages': [
+            {
+              'role': 'system',
+              'content':
+                  'You are an AI that creates Anki-style flashcards in Q&A format.',
+            },
+            {
+              'role': 'user',
+              'content':
+                  'Generate 5 flashcards as JSON [{"question":"...","answer":"..."}] from the text below:\n\n$text',
+            },
+          ],
+        }),
+      );
+      print("📬 AI responded: ${resp.statusCode}");
+    } catch (e, st) {
+      debugPrint('❌ HTTP error: $e\n$st');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.unsupportedFormat),
+          content: Text('Network error – please check your connection.'),
         ),
       );
       setState(() => _isGenerating = false);
       return;
     }
 
-    // ── send to AI ────────────────────────────────────────
-    const apiKey = 'sk-your-openrouter-key';
-    const model = 'mistral';
-    final url = Uri.parse('https://openrouter.ai/api/v1/chat/completions');
-
-    final resp = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $apiKey',
-      },
-      body: jsonEncode({
-        'model': model,
-        'messages': [
-          {
-            'role': 'system',
-            'content':
-                'You are an AI that creates Anki-style flashcards in Q&A format.',
-          },
-          {
-            'role': 'user',
-            'content':
-                'Generate 5 flashcards as JSON [{"question":"...","answer":"..."}] from the text below:\n\n$text',
-          },
-        ],
-      }),
-    );
-
-    // ── handle response ───────────────────────────────────
-    if (resp.statusCode == 200) {
-      try {
-        final content =
-            jsonDecode(resp.body)['choices'][0]['message']['content'];
-        final cards =
-            (jsonDecode(content) as List).map((m) {
-              return Flashcard(question: m['question'], answer: m['answer']);
-            }).toList();
-
-        setState(() {
-          _generatedFlashcards = cards;
-        });
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.parseError)),
-        );
-      }
-    } else {
+    // ──  STEP 3: Handle HTTP status ────────────────────────────
+    if (resp.statusCode != 200) {
+      debugPrint('❌ AI API returned ${resp.statusCode}: ${resp.body}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.apiError(resp.statusCode.toString()),
-          ),
-        ),
+        SnackBar(content: Text(loc.apiError(resp.statusCode.toString()))),
       );
+      setState(() => _isGenerating = false);
+      return;
     }
 
+    // ──  STEP 4: Parse JSON ────────────────────────────────────
+    try {
+      // 1) Pull out the AI’s “message” content
+      final raw = jsonDecode(resp.body)['choices'][0]['message']['content'];
+
+      // 2) Log it so you see exactly what came back
+      print('🔍 Raw AI content:\n$raw');
+
+      // 3) Strip out any Markdown fences (``` or ```json)
+      final cleaned = raw.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+
+      // 4) Now parse the cleaned JSON
+      final cards =
+          (jsonDecode(cleaned) as List).map((m) {
+            return Flashcard(question: m['question'], answer: m['answer']);
+          }).toList();
+
+      // 5) Update state & show dialog
+      setState(() => _generatedFlashcards = cards);
+      if (_generatedFlashcards.isNotEmpty) {
+        _showGeneratedCardsDialog();
+      }
+
+      print("✅ Parsed ${cards.length} flashcards");
+    } catch (e, st) {
+      debugPrint('❌ JSON parse error: $e\n$st');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.parseError)));
+    }
     setState(() => _isGenerating = false);
   }
 
-  // 3) Confirm & insert into DB
+  /// 3) Confirm & save to DB
   Future<void> _confirmGeneratedCards() async {
     for (var card in _generatedFlashcards) {
       await DatabaseHelper.instance.insertFlashcard(card, widget.deck.deckId);
@@ -141,6 +172,7 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // ── Practice button ─────────────────────────────
               _actionButton(loc.practiceNow, Icons.play_arrow, () async {
                 final cards = await DatabaseHelper.instance.getFlashcards(
                   widget.deck.deckId,
@@ -155,19 +187,22 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
 
               const SizedBox(height: 20),
 
+              // ── Manual vs. AI row ───────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _actionButton(loc.manuallyAddCards, Icons.edit, () {
-                    Navigator.push(
+                  _actionButton(
+                    loc.manuallyAddCards,
+                    Icons.edit,
+                    () => Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
                             (_) =>
                                 AddFlashcardScreen(deckId: widget.deck.deckId),
                       ),
-                    );
-                  }),
+                    ),
+                  ),
                   const SizedBox(width: 20),
                   _actionButton(
                     loc.generateFromAI,
@@ -177,47 +212,13 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
                 ],
               ),
 
+              // ── Loading indicator ───────────────────────────
               if (_isGenerating) ...[
                 const SizedBox(height: 24),
                 const CircularProgressIndicator(),
               ],
 
-              if (_generatedFlashcards.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Text(
-                  loc.generatedCards,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 200,
-                  child: ListView.builder(
-                    itemCount: _generatedFlashcards.length,
-                    itemBuilder: (ctx, i) {
-                      final c = _generatedFlashcards[i];
-                      return ListTile(
-                        title: Text(c.question),
-                        subtitle: Text(c.answer),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed:
-                              () => setState(
-                                () => _generatedFlashcards.removeAt(i),
-                              ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: _confirmGeneratedCards,
-                  child: Text(loc.confirmAddAll),
-                ),
-              ],
+              // ── Preview & confirm ───────────────────────────
             ],
           ),
         ),
@@ -250,6 +251,59 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showGeneratedCardsDialog() {
+    final loc = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // force them to Confirm or Cancel
+      builder: (context) {
+        return AlertDialog(
+          title: Text(loc.generatedCards),
+          content: SizedBox(
+            width: double.maxFinite,
+            // constrain height so it scrolls if long
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: ListView.builder(
+              itemCount: _generatedFlashcards.length,
+              itemBuilder: (ctx, i) {
+                final c = _generatedFlashcards[i];
+                return ListTile(
+                  title: Text(c.question),
+                  subtitle: Text(c.answer),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() => _generatedFlashcards.removeAt(i));
+                      // refresh the dialog
+                      (context as Element).markNeedsBuild();
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text(loc.cancel),
+              onPressed: () {
+                setState(() => _generatedFlashcards.clear());
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: Text(loc.confirmAddAll),
+              onPressed: () {
+                _confirmGeneratedCards();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

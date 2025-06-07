@@ -24,6 +24,7 @@
   "apiError": "API error: {code}",
   "cardsAdded": "Flashcards added to deck!",
   "generatedCards": "Generated Flashcards:",
-  "confirmAddAll": "Confirm & Add All to Deck"
+  "confirmAddAll": "Confirm & Add All to Deck",
+  "cancel": "Cancel"
 
 }

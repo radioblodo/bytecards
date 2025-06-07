@@ -83,4 +83,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmAddAll => 'Confirm & Add All to Deck';
+
+  @override
+  String get cancel => 'Cancel';
 }

@@ -83,4 +83,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirmAddAll => 'Confirm & Add All to Deck';
+
+  @override
+  String get cancel => '取消';
 }

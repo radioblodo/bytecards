@@ -96,4 +96,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String apiError(String error) => 'An error occurred. Please try again.';
+
+  @override
+  String get cancel => 'Cancel';
 }

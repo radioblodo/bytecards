@@ -17,5 +17,6 @@
   "dark": "深色",
   "systemDefault": "系统默认",
   "noDecksMessage": "你还没有卡组。点击 + 创建一个。",
-  "generatedCards": "AI生成的卡片："
+  "generatedCards": "AI生成的卡片：",
+  "cancel": "取消"
 }
