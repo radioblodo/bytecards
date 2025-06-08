@@ -86,4 +86,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get flashcards => 'flashcards';
+
+  @override
+  String get createDeck => 'Create Deck';
+
+  @override
+  String get createDeckButton => 'Create';
+
+  @override
+  String get deckName => 'Deck Name';
 }

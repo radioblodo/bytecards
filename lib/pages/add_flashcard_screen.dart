@@ -15,14 +15,18 @@ class _AddFlashcardScreenState extends State<AddFlashcardScreen> {
   final TextEditingController _answerController = TextEditingController();
 
   void _saveFlashcard() async {
-    String question = _questionController.text.trim();
-    String answer = _answerController.text.trim();
+    final question = _questionController.text.trim();
+    final answer = _answerController.text.trim();
     if (question.isEmpty || answer.isEmpty) return;
 
-    Flashcard newFlashcard = Flashcard(question: question, answer: answer);
-    await DatabaseHelper.instance.insertFlashcard(newFlashcard, widget.deckId);
+    final newCard = Flashcard(question: question, answer: answer);
+    final newId = await DatabaseHelper.instance.insertFlashcard(
+      newCard,
+      widget.deckId,
+    );
 
-    Navigator.pop(context); // Return to Deck Detail Screen
+    // Now you know the DB row ID, you could even pass it back:
+    Navigator.pop(context);
   }
 
   @override

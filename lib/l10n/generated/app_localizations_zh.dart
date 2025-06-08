@@ -99,4 +99,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cancel => '取消';
+
+  @override
+  String get flashcards => '卡片';
+
+  @override
+  String get createDeck => '创建字卡组';
+
+  @override
+  String get createDeckButton => '新建字卡组';
+
+  @override
+  String get deckName => '字卡组名称';
+
+  @override
+  String get noFlashcardsAvailable => '没有可用的卡片';
+
+  @override
+  String get practiceMode => '练习模式';
 }

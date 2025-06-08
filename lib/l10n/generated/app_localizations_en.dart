@@ -9,6 +9,15 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get createDeck => 'Create Deck';
+
+  @override
+  String get createDeckButton => 'Create Deck';
+
+  @override
+  String get deckName => 'Deck Name';
+
+  @override
   String get appTitle => 'ByteCards';
 
   @override
@@ -99,4 +108,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get flashcards => 'flashcards';
+
+  @override
+  String get noFlashcardsAvailable => 'No flashcards available.';
+
+  @override
+  String get practiceMode => 'Practice Mode';
 }

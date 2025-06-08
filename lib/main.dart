@@ -1,3 +1,4 @@
+import 'package:bytecards/frequency_manager.dart';
 import 'package:flutter/material.dart';
 import 'services/storage_service.dart';
 
@@ -12,6 +13,9 @@ void main() async {
   // Load persisted theme and locale
   themeNotifier.value = await StorageService.loadTheme();
   localeNotifier.value = await StorageService.loadLocale();
+  frequencyNotifier.value = Frequency.fromString(
+    await StorageService.loadFrequency(),
+  );
 
   runApp(const ByteCardsApp());
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bytecards/datamodels/deck.dart';
-import 'package:bytecards/database/database_helper.dart'; // Import your SQLite helper
+import 'package:bytecards/database/database_helper.dart';
+import 'package:bytecards/l10n/generated/app_localizations.dart';
 
 class CreateDeckScreen extends StatefulWidget {
   @override
@@ -14,24 +15,22 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
     String deckName = _deckNameController.text.trim();
     if (deckName.isEmpty) return;
 
-    // Create a new deck instance
     Deck newDeck = Deck(
-      deckId: DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID
+      deckId: DateTime.now().millisecondsSinceEpoch.toString(),
       title: deckName,
-      flashcards: [], // Empty flashcards initially
+      flashcards: [],
     );
 
-    // Save to SQLite (or SharedPreferences/Firebase)
     await DatabaseHelper.instance.insertDeck(newDeck);
-
-    // Go back to Home screen
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Create New Deck')),
+      appBar: AppBar(title: Text(loc.createDeck)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -39,14 +38,14 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
             TextField(
               controller: _deckNameController,
               decoration: InputDecoration(
-                labelText: "Deck Name",
-                border: OutlineInputBorder(),
+                labelText: loc.deckName,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveDeck,
-              child: const Text("Create Deck"),
+              child: Text(loc.createDeckButton),
             ),
           ],
         ),

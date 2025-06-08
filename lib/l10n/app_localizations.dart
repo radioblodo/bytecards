@@ -243,6 +243,16 @@ abstract class AppLocalizations {
   String get confirmAddAll;
 
   String get cancel;
+
+  String get flashcards;
+
+  String get createDeck;
+
+  String get deckName;
+
+  String get createDeckButton;
+
+  get homeTitle => null;
 }
 
 class _AppLocalizationsDelegate

@@ -11,26 +11,22 @@ class DatabaseHelper {
 
   DatabaseHelper._privateConstructor();
 
-  // Function 1: Database Getter 
+  // Function 1: Database Getter
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
-  // Function 2: Initialize Database 
+  // Function 2: Initialize Database
   Future<Database> _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'bytecards.db');
-    
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
-  // Function 3: Creates Tables 
+  // Function 3: Creates Tables
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE decks (
@@ -49,17 +45,24 @@ class DatabaseHelper {
         FOREIGN KEY(deckId) REFERENCES decks(deckId) ON DELETE CASCADE
       )
     ''');
+
+    await db.execute('''
+  CREATE TABLE flashcard_reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    flashcardId INTEGER,
+    review_time TEXT,
+    FOREIGN KEY(flashcardId) REFERENCES flashcards(id) ON DELETE CASCADE
+  );
+''');
   }
 
   // Function 4: Insert a new deck
   Future<void> insertDeck(Deck deck) async {
     final db = await database;
-    await db.insert('decks', {
-      'deckId': deck.deckId,
-      'title': deck.title,
-      'color': deck.color, 
-    }, 
-    conflictAlgorithm: ConflictAlgorithm.replace, // prevent duplicate IDs
+    await db.insert(
+      'decks',
+      {'deckId': deck.deckId, 'title': deck.title, 'color': deck.color},
+      conflictAlgorithm: ConflictAlgorithm.replace, // prevent duplicate IDs
     );
   }
 
@@ -70,51 +73,73 @@ class DatabaseHelper {
 
     List<Deck> decks = [];
     for (var deck in decksData) {
-      decks.add(Deck(
-        deckId: deck['deckId'],
-        title: deck['title'],
-        color: deck['color'], // to make the color change persistent
-        flashcards: await getFlashcards(deck['deckId']),
-      ));
+      decks.add(
+        Deck(
+          deckId: deck['deckId'],
+          title: deck['title'],
+          color: deck['color'], // to make the color change persistent
+          flashcards: await getFlashcards(deck['deckId']),
+        ),
+      );
     }
     return decks;
   }
 
   Future<void> updateDeckColor(String deckId, int color) async {
-  final db = await database;
-  await db.update(
-    'decks',
-    {'color': color},
-    where: 'deckId = ?',
-    whereArgs: [deckId],
-  );
-}
-
-  // Insert a flashcard into a deck
-  Future<void> insertFlashcard(Flashcard flashcard, String deckId) async {
     final db = await database;
-    await db.insert('flashcards', {
+    await db.update(
+      'decks',
+      {'color': color},
+      where: 'deckId = ?',
+      whereArgs: [deckId],
+    );
+  }
+
+  /// Inserts a flashcard and returns the new row’s `id`.
+  Future<int> insertFlashcard(Flashcard flashcard, String deckId) async {
+    final db = await database;
+    return await db.insert('flashcards', {
       'deckId': deckId,
       'question': flashcard.question,
       'answer': flashcard.answer,
-    });
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  // Fetch all flashcards for a specific deck
+  /// Returns all flashcards in that deck, now with their DB `id`.
   Future<List<Flashcard>> getFlashcards(String deckId) async {
     final db = await database;
-    final List<Map<String, dynamic>> flashcardsData =
-        await db.query('flashcards', where: 'deckId = ?', whereArgs: [deckId]);
-
-    return flashcardsData.map((flashcard) => Flashcard.fromMap(flashcard)).toList();
+    final rows = await db.query(
+      'flashcards',
+      where: 'deckId = ?',
+      whereArgs: [deckId],
+    );
+    return rows.map((r) => Flashcard.fromMap(r)).toList();
   }
 
   Future<void> deleteDeck(String deckId) async {
-    final db = await database; 
-    await db.delete(
-      'decks',
-      where: 'deckId = ?',
-      whereArgs: [deckId], 
-    ); 
+    final db = await database;
+    await db.delete('decks', where: 'deckId = ?', whereArgs: [deckId]);
+  }
+
+  // in DatabaseHelper:
+  Future<void> insertReview(int flashcardId, DateTime when) async {
+    final db = await database;
+    await db.insert('flashcard_reviews', {
+      'flashcardId': flashcardId,
+      'review_time': when.toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getReviewStats() async {
+    final db = await database;
+    // Count reviews per day for last 7 days
+    return await db.rawQuery('''
+    SELECT date(review_time) AS day,
+           COUNT(*) AS reviewed
+    FROM flashcard_reviews
+    WHERE review_time >= date('now','-6 days')
+    GROUP BY day
+    ORDER BY day ASC;
+  ''');
   }
 }

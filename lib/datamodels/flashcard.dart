@@ -1,26 +1,23 @@
 class Flashcard {
-  String question; 
-  String answer; 
+  final int? id; // ← New: nullable ID
+  final String question;
+  final String answer;
 
-  // constructor of Flashcard 
-  Flashcard({
-    required this.question, 
-    required this.answer,
-  }); 
+  Flashcard({this.id, required this.question, required this.answer});
 
-  // convert flashcard to map to store 
   Map<String, dynamic> toMap() {
-    return {
-      'question': question, 
-      'answer': answer, 
-    };
+    final map = <String, dynamic>{'question': question, 'answer': answer};
+    if (id != null) {
+      map['id'] = id;
+    }
+    return map;
   }
 
-  //convert from map to flashcard 
   factory Flashcard.fromMap(Map<String, dynamic> map) {
     return Flashcard(
-      question: map['question'], 
-      answer: map['answer'],
+      id: map['id'] as int?, // ← pull in the DB id
+      question: map['question'] as String,
+      answer: map['answer'] as String,
     );
   }
 }

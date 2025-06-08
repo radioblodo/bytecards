@@ -30,4 +30,26 @@ class StorageService {
     final lang = prefs.getString(_localeKey) ?? 'en';
     return Locale(lang);
   }
+
+  static Future<String> loadLocaleString() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String localeCode = prefs.getString(_localeKey) ?? 'en';
+    if (localeCode == 'en') {
+      return 'english';
+    } else if (localeCode == 'zh') {
+      return 'mandarin';
+    } else {
+      return 'english'; // Default
+    }
+  }
+
+  static Future<void> saveFrequency(String frequency) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('reminder_frequency', frequency);
+  }
+
+  static Future<String> loadFrequency() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('reminder_frequency') ?? 'daily';
+  }
 }

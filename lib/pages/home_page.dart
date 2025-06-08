@@ -2,12 +2,11 @@ import 'package:bytecards/datamodels/deck.dart';
 import 'package:bytecards/pages/deck_detail_page.dart';
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
-import '../l10n/generated/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bytecards/database/database_helper.dart';
 import 'package:bytecards/widgets/create_deck_screen.dart';
 import 'package:bytecards/widgets/carddeck_widget.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:bytecards/l10n/generated/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -26,7 +25,6 @@ class _HomePageState extends State<HomePage>
     super.initState();
     _loadDecks();
 
-    //Initialize animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 250),
@@ -39,7 +37,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _loadDecks() async {
-    List<Deck> decks = await DatabaseHelper.instance.getDecks();
+    final decks = await DatabaseHelper.instance.getDecks();
     setState(() {
       _decks = decks;
     });
@@ -47,12 +45,10 @@ class _HomePageState extends State<HomePage>
 
   void _navigateToCreateDeck() async {
     _animationController.reverse();
-    //Navigate to create deck screen and wait for result
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateDeckScreen()),
     );
-    //Refresh deck list after returning
     _loadDecks();
   }
 
@@ -64,19 +60,19 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return GestureDetector(
-      onTap: () {
-        _animationController.reverse();
-      },
+      onTap: () => _animationController.reverse(),
       child: Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.homeTitle)),
+        appBar: AppBar(title: Text(loc.homeTitle)),
         body:
             _decks.isEmpty
                 ? Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
-                      AppLocalizations.of(context)!.noDecksMessage,
+                      loc.noDecksMessage,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -86,9 +82,8 @@ class _HomePageState extends State<HomePage>
                   itemBuilder: (context, index) {
                     return CardDeckWidget(
                       deck: _decks[index],
-                      onTap: () {
-                        // Navigate to deck details screen
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder:
@@ -96,13 +91,11 @@ class _HomePageState extends State<HomePage>
                                     DeckDetailScreen(deck: _decks[index]),
                           ),
                         );
+                        _loadDecks();
                         print("Tapped on ${_decks[index].title}");
                       },
                       onLongPress: () {
-                        _showDeckOptionsDialog(
-                          context,
-                          _decks[index],
-                        ); // ✅ Show options on long press
+                        _showDeckOptionsDialog(context, _decks[index]);
                       },
                     );
                   },
@@ -117,14 +110,13 @@ class _HomePageState extends State<HomePage>
           iconColor: Colors.white,
           iconData: Icons.add,
           backGroundColor: Colors.blue,
-          items: <Bubble>[
-            //Floating action menu item
+          items: [
             Bubble(
-              title: "Create a new deck          ",
+              title: loc.confirmAddAll,
               bubbleColor: Colors.blue,
               iconColor: Colors.transparent,
               icon: Icons.circle,
-              titleStyle: TextStyle(fontSize: 16, color: Colors.white),
+              titleStyle: const TextStyle(fontSize: 16, color: Colors.white),
               onPress: () {
                 _navigateToCreateDeck();
                 _animationController.reverse();
@@ -163,7 +155,7 @@ class _HomePageState extends State<HomePage>
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.edit),
+                  leading: const Icon(Icons.palette),
                   title: const Text("Choose a color"),
                   onTap: () {
                     Navigator.pop(context);
@@ -176,15 +168,13 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  //To be implemented 05-03-2025
   void _editDeck(Deck deck) {
     print("Editing ${deck.title}");
-    // TODO: Navigate to edit screen
+    // TODO: Implement navigation to edit screen
   }
 
   void _deleteDeck(Deck deck) async {
     await DatabaseHelper.instance.deleteDeck(deck.deckId);
-
     setState(() {
       _decks.remove(deck);
     });
@@ -211,7 +201,6 @@ class _HomePageState extends State<HomePage>
                 _colorOption(context, deck, Colors.cyan),
                 _colorOption(context, deck, Colors.pink),
                 _colorOption(context, deck, Colors.teal),
-                // "+" button for custom color picker
                 _customColorOption(context, deck),
               ],
             ),
@@ -221,20 +210,17 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  // ✅ Build Color Option
   Widget _colorOption(BuildContext context, Deck deck, Color color) {
     return GestureDetector(
       onTap: () async {
-        await DatabaseHelper.instance.updateDeckColor(
-          deck.deckId,
-          color.value,
-        ); // ✅ Update DB
+        await DatabaseHelper.instance.updateDeckColor(deck.deckId, color.value);
         setState(() {
-          deck.color = color.value; // ✅ Update UI
+          deck.color = color.value;
         });
-        Navigator.pop(context); // Close Dialog
+        Navigator.pop(context);
       },
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4.0),
         width: 40,
         height: 40,
         decoration: BoxDecoration(
@@ -248,24 +234,22 @@ class _HomePageState extends State<HomePage>
 
   Widget _customColorOption(BuildContext context, Deck deck) {
     return GestureDetector(
-      onTap: () {
-        _showFullColorPicker(context, deck);
-      },
-
+      onTap: () => _showFullColorPicker(context, deck),
       child: Container(
         width: 40,
         height: 40,
+        margin: const EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: Colors.black, width: 1),
         ),
-        child: const Icon(Icons.add, size: 24), // "+" icon inside a circle
+        child: const Icon(Icons.add, size: 24),
       ),
     );
   }
 
   void _showFullColorPicker(BuildContext context, Deck deck) {
-    Color selectedColor = Color(deck.color); // Get the current deck color
+    Color selectedColor = Color(deck.color);
 
     showDialog(
       context: context,
@@ -275,9 +259,7 @@ class _HomePageState extends State<HomePage>
           content: SingleChildScrollView(
             child: ColorPicker(
               pickerColor: selectedColor,
-              onColorChanged: (color) {
-                selectedColor = color;
-              },
+              onColorChanged: (color) => selectedColor = color,
               showLabel: true,
               pickerAreaHeightPercent: 0.8,
             ),
@@ -297,8 +279,8 @@ class _HomePageState extends State<HomePage>
                 setState(() {
                   deck.color = selectedColor.value;
                 });
-                Navigator.pop(context); // close picker
-                Navigator.pop(context); // close color selection dialog
+                Navigator.pop(context); // Close picker
+                Navigator.pop(context); // Close dialog
               },
             ),
           ],

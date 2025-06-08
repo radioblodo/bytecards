@@ -231,6 +231,18 @@ abstract class AppLocalizations {
   String apiError(String errorMessage);
 
   String get fileReadError;
+
+  String get flashcards;
+
+  String get createDeck;
+
+  String get deckName;
+
+  String get createDeckButton;
+
+  String get practiceMode;
+
+  String get noFlashcardsAvailable;
 }
 
 class _AppLocalizationsDelegate

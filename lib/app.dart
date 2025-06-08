@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'theme_manager.dart';
 import 'locale_manager.dart';
-import '../l10n/generated/app_localizations.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'pages/home_page.dart';
 import 'pages/statistics_page.dart';
 import 'pages/settings_page.dart';
@@ -16,12 +16,6 @@ class ByteCardsApp extends StatefulWidget {
 
 class _ByteCardsAppState extends State<ByteCardsApp> {
   int _selectedIndex = 0;
-
-  static final List<Widget> _pages = [
-    HomePage(),
-    StatisticsPage(),
-    SettingsPage(),
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -42,14 +36,9 @@ class _ByteCardsAppState extends State<ByteCardsApp> {
               themeMode: currentTheme,
               theme: ThemeData.light(),
               darkTheme: ThemeData.dark(),
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [Locale('en'), Locale('zh')],
               locale: currentLocale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
               home: _MainScaffold(
                 selectedIndex: _selectedIndex,
                 onItemTapped: _onItemTapped,
@@ -80,7 +69,12 @@ class _MainScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
+
+    // Add null check fallback just in case localization fails
+    final homeTitle = loc?.home ?? 'Home';
+    final statsTitle = loc?.statistics ?? 'Statistics';
+    final settingsTitle = loc?.settings ?? 'Settings';
 
     return Scaffold(
       body: _pages[selectedIndex],
@@ -89,16 +83,16 @@ class _MainScaffold extends StatelessWidget {
         onTap: onItemTapped,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: localizations.home,
+            icon: const Icon(Icons.home),
+            label: homeTitle,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: localizations.statistics,
+            icon: const Icon(Icons.bar_chart),
+            label: statsTitle,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: localizations.settings,
+            icon: const Icon(Icons.settings),
+            label: settingsTitle,
           ),
         ],
       ),
