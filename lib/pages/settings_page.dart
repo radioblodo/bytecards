@@ -129,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
+      leading: Icon(icon, color: const Color(0xFF4A45C4)),
       title: Text(
         title,
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

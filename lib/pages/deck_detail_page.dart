@@ -77,7 +77,7 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
         headers: {
           'Content-Type': 'application/json',
           'Authorization':
-              'Bearer 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',
+              'Bearer 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',
         },
         body: jsonEncode({
           'model': 'openai/gpt-3.5-turbo',
@@ -180,7 +180,11 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PracticeScreen(flashcards: cards),
+                    builder:
+                        (_) => PracticeScreen(
+                          flashcards: cards,
+                          deckTitle: widget.deck.title,
+                        ),
                   ),
                 );
               }),

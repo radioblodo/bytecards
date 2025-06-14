@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get createDeck => 'Create Deck';
+  String get createDeck => 'Create a new deck';
 
   @override
   String get createDeckButton => 'Create Deck';

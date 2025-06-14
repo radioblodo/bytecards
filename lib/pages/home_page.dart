@@ -109,13 +109,13 @@ class _HomePageState extends State<HomePage>
           },
           iconColor: Colors.white,
           iconData: Icons.add,
-          backGroundColor: Colors.blue,
+          backGroundColor: const Color(0xFF4A45C4),
           items: [
             Bubble(
-              title: loc.confirmAddAll,
-              bubbleColor: Colors.blue,
-              iconColor: Colors.transparent,
-              icon: Icons.circle,
+              title: loc.createDeck,
+              bubbleColor: const Color(0xFF4A45C4),
+              icon: Icons.library_add,
+              iconColor: Colors.white,
               titleStyle: const TextStyle(fontSize: 16, color: Colors.white),
               onPress: () {
                 _navigateToCreateDeck();

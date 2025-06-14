@@ -6,9 +6,18 @@ import 'package:bytecards/widgets/flashcard_widget.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class PracticeScreen extends StatefulWidget {
+  // Pass the name of the selected deck
+  final String deckTitle;
+
+  // Pass the flashcards of the selected deck
   final List<Flashcard> flashcards;
 
-  const PracticeScreen({Key? key, required this.flashcards}) : super(key: key);
+  // Constructor of a PracticeScreen obj
+  const PracticeScreen({
+    Key? key,
+    required this.flashcards,
+    required this.deckTitle,
+  }) : super(key: key);
 
   @override
   _PracticeScreenState createState() => _PracticeScreenState();
@@ -21,54 +30,149 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _updateFontSizes(context);
-
-    if (widget.flashcards.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.practiceMode)),
-        body: Center(
-          child: Text(AppLocalizations.of(context)!.noFlashcardsAvailable),
-        ),
-      );
-    }
+    final flashcard = widget.flashcards[_currentIndex];
+    final totalCards = widget.flashcards.length;
+    final progress = (_currentIndex + 1) / totalCards;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Practice Mode")),
-      body: Center(
+      backgroundColor: const Color(0xFF4A45C4),
+      body: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            FlashcardWidget(
-              flashcard: widget.flashcards[_currentIndex],
-              showAnswer: _showAnswer,
-              onTap:
-                  () => setState(() {
-                    _showAnswer =
-                        !_showAnswer; // Toggle between question and answer
-                  }),
+            // 📘 Top Header
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.deckTitle,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 30),
-            // ✅ Difficulty Rating Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _difficultyButton("Easy", Colors.green, Icons.check, () {
-                  _rateFlashcard(1); // Lower priority, show less often
-                }),
-                const SizedBox(width: 15),
-                _difficultyButton(
-                  "Medium",
-                  Colors.yellow[700]!,
-                  Icons.sentiment_neutral,
-                  () {
-                    _rateFlashcard(2); // Normal interval
+
+            // 📄 Flashcard Display
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showAnswer = !_showAnswer;
+                  });
+                },
+                child: TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: _showAnswer ? 1 : 0),
+                  duration: const Duration(milliseconds: 500),
+                  builder: (context, value, child) {
+                    // Flip direction and content
+                    final isFront = value < 0.5;
+                    final displayText =
+                        isFront ? flashcard.question : flashcard.answer;
+
+                    return Transform(
+                      alignment: Alignment.center,
+                      transform:
+                          Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 3.14), // flip 180 degrees
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Transform(
+                          alignment: Alignment.center,
+                          transform:
+                              Matrix4.identity()..rotateY(
+                                value > 0.5 ? 3.14 : 0,
+                              ), // flip the text back when the card has been flipped
+                          child: Center(
+                            child: Text(
+                              displayText,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                 ),
-                const SizedBox(width: 15),
-                _difficultyButton("Hard", Colors.red, Icons.close, () {
-                  _rateFlashcard(3); // Higher priority, show more often
-                }),
-              ],
+              ),
+            ),
+
+            // 📊 Progress bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.white30,
+                    color: Colors.white,
+                    minHeight: 8,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${_currentIndex + 1}/$totalCards',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ➡️ Next Card Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: _difficultyButton(
+                      "Easy",
+                      Colors.green,
+                      Icons.sentiment_satisfied_alt,
+                      () => _rateFlashcard(1),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _difficultyButton(
+                      "Medium",
+                      Colors.orange,
+                      Icons.sentiment_neutral,
+                      () => _rateFlashcard(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _difficultyButton(
+                      "Hard",
+                      Colors.red,
+                      Icons.sentiment_dissatisfied,
+                      () => _rateFlashcard(3),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -144,7 +248,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
     // 🔥 Here’s the magic: card.id must be non-null
     if (card.id != null) {
-      await DatabaseHelper.instance.insertReview(card.id!, DateTime.now());
+      await DatabaseHelper.instance.insertReview(
+        card.id!,
+        DateTime.now(),
+        difficulty,
+      );
     }
 
     setState(() {

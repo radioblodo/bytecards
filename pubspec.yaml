@@ -42,6 +42,7 @@ dependencies:
   shared_preferences: ^2.2.2
   http: ^0.13.0 # For making HTTP requests
   fl_chart: ^0.65.0 # For charts and graphs
+  flutter_heatmap_calendar: ^1.0.5 #heatmap_calendar: ^1.0.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
