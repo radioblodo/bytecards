@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageService {
   static const String _themeKey = 'app_theme';
   static const String _localeKey = 'app_locale';
+  static const _apiKeyKey = 'user_api_key';
+  static const _providerKey = 'ai_provider';
+  static final _secureStorage = FlutterSecureStorage();
 
   static Future<void> saveTheme(ThemeMode mode) async {
     final prefs = await SharedPreferences.getInstance();
@@ -51,5 +55,29 @@ class StorageService {
   static Future<String> loadFrequency() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('reminder_frequency') ?? 'daily';
+  }
+
+  // 💼 Save AI Provider (e.g., OpenAI, OpenRouter)
+  static Future<void> saveProvider(String provider) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_providerKey, provider);
+  }
+
+  // 💼 Load AI Provider
+  static Future<String?> loadProvider() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_providerKey);
+  }
+
+  static Future<void> saveApiKey(String key) async {
+    await _secureStorage.write(key: _apiKeyKey, value: key);
+  }
+
+  static Future<String?> loadApiKey() async {
+    return await _secureStorage.read(key: _apiKeyKey);
+  }
+
+  static Future<void> deleteApiKey() async {
+    await _secureStorage.delete(key: _apiKeyKey);
   }
 }

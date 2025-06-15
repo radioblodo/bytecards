@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bytecards/theme_manager.dart';
 import 'package:bytecards/locale_manager.dart';
@@ -6,6 +7,10 @@ import 'package:bytecards/frequency_manager.dart';
 import 'package:bytecards/enum/setting_type.dart';
 import 'package:bytecards/l10n/generated/app_localizations.dart';
 import 'package:bytecards/services/storage_service.dart';
+import 'package:bytecards/services/notification_service.dart';
+import 'package:android_intent_plus/android_intent.dart';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -85,6 +90,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   icon: Icons.palette,
                   onTap: () {
                     _showThemeDialog(context);
+                  },
+                ),
+                _buildSettingsTile(
+                  title: "OpenAI API Key",
+                  subtitle: "Tap to enter your key",
+                  icon: Icons.vpn_key,
+                  onTap: () {
+                    _showApiKeyDialog(context);
                   },
                 ),
               ],
@@ -235,6 +248,111 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showApiKeyDialog(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    final TextEditingController _apiKeyController = TextEditingController();
+
+    final storedKey = await StorageService.loadApiKey();
+    if (storedKey != null) _apiKeyController.text = storedKey;
+    String selectedProvider = await StorageService.loadProvider() ?? 'OpenAI';
+
+    final Map<String, String> providerLinks = {
+      'OpenAI':
+          'https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key',
+      'OpenRouter':
+          'https://openrouter.ai/docs/faq#how-do-i-get-started-with-openrouter',
+      'Azure OpenAI':
+          'https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart',
+      'Other': '',
+    };
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setState) => AlertDialog(
+                title: const Text("Enter Your AI API Key"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DropdownButton<String>(
+                      value: selectedProvider,
+                      isExpanded: true,
+                      onChanged: (value) {
+                        if (value != null)
+                          setState(() => selectedProvider = value);
+                      },
+                      items:
+                          providerLinks.keys.map((p) {
+                            return DropdownMenuItem(value: p, child: Text(p));
+                          }).toList(),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _apiKeyController,
+                      decoration: InputDecoration(
+                        hintText:
+                            selectedProvider == 'OpenAI'
+                                ? 'e.g. sk-...'
+                                : selectedProvider == 'OpenRouter'
+                                ? 'e.g. or-...'
+                                : 'Paste your API key here',
+                      ),
+                      obscureText: true,
+                      autocorrect: false,
+                    ),
+                    const SizedBox(height: 10),
+                    if (providerLinks[selectedProvider]!.isNotEmpty)
+                      InkWell(
+                        onTap: () async {
+                          final url = providerLinks[selectedProvider]!;
+                          if (await canLaunchUrl(Uri.parse(url))) {
+                            await launchUrl(
+                              Uri.parse(url),
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("❌ Could not open the link."),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          "🔗 How to get your API key?",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    child: Text(loc.cancel),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  ElevatedButton(
+                    child: const Text("Save"),
+                    onPressed: () async {
+                      await StorageService.saveProvider(selectedProvider);
+                      await StorageService.saveApiKey(
+                        _apiKeyController.text.trim(),
+                      );
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("✅ API Key Saved")),
+                      );
+                    },
+                  ),
+                ],
+              ),
+        );
+      },
+    );
+  }
+
   Widget _dialogOption(
     BuildContext context,
     String option,
@@ -242,21 +360,36 @@ class _SettingsPageState extends State<SettingsPage> {
   ) {
     return ListTile(
       title: Text(option),
-      onTap: () {
+      onTap: () async {
         switch (settingType) {
           case SettingType.reminderFrequency:
             if (option == AppLocalizations.of(context)!.daily) {
               frequencyNotifier.value = const Frequency('daily');
               StorageService.saveFrequency('daily');
               _selectedFrequency = 'daily'; // ✅ Store key
+              await NotificationService.cancelAllReminders();
+              await NotificationService.checkAndRequestExactAlarmPermission(); // 🛑 Add this line
+              await NotificationService.scheduleReminder(
+                const Duration(seconds: 10),
+              );
             } else if (option == AppLocalizations.of(context)!.weekly) {
               frequencyNotifier.value = const Frequency('weekly');
               StorageService.saveFrequency('weekly');
               _selectedFrequency = 'weekly'; // ✅ Store key
+              await NotificationService.cancelAllReminders();
+              await NotificationService.checkAndRequestExactAlarmPermission(); // 🛑 Add this line
+              await NotificationService.scheduleReminder(
+                const Duration(days: 7),
+              );
             } else if (option == AppLocalizations.of(context)!.monthly) {
               frequencyNotifier.value = const Frequency('monthly');
               StorageService.saveFrequency('monthly');
               _selectedFrequency = 'monthly'; // ✅ Store key
+              await NotificationService.cancelAllReminders();
+              await NotificationService.checkAndRequestExactAlarmPermission(); // 🛑 Add this line
+              await NotificationService.scheduleReminder(
+                const Duration(days: 30),
+              );
             }
             setState(() {});
             break;

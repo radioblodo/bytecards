@@ -7,6 +7,8 @@ import 'package:bytecards/database/database_helper.dart';
 import 'package:bytecards/l10n/generated/app_localizations.dart';
 import 'package:bytecards/pages/add_flashcard_screen.dart';
 import 'package:bytecards/pages/practice_screen.dart';
+import 'package:bytecards/services/storage_service.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -26,18 +28,28 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
 
   /// 1) Open file picker
   void _pickDocument() async {
+    final apiKey = await StorageService.loadApiKey();
+
+    if (apiKey == null || apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("❌ Please enter your API key in Settings."),
+        ),
+      );
+      return; // 🛑 stop before file picker
+    }
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'txt', 'docx'],
     );
     final path = result?.files.single.path;
     if (path != null) {
-      _generateFlashcardsFromAI(path);
+      _generateFlashcardsFromAI(path, apiKey);
     }
   }
 
   /// 2) Extract text, call AI, parse JSON
-  Future<void> _generateFlashcardsFromAI(String filePath) async {
+  Future<void> _generateFlashcardsFromAI(String filePath, String apiKey) async {
     final loc = AppLocalizations.of(context)!;
     setState(() => _isGenerating = true);
 
@@ -76,8 +88,7 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
         Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':
-              'Bearer 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',
+          'Authorization': 'Bearer $apiKey',
         },
         body: jsonEncode({
           'model': 'openai/gpt-3.5-turbo',
@@ -126,13 +137,43 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
       print('🔍 Raw AI content:\n$raw');
 
       // 3) Strip out any Markdown fences (``` or ```json)
-      final cleaned = raw.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+      final cleaned =
+          raw
+              .replaceAll(RegExp(r'^```(?:json)?'), '') // opening
+              .replaceAll(RegExp(r'```$'), '') // closing
+              .trim();
 
       // 4) Now parse the cleaned JSON
-      final cards =
-          (jsonDecode(cleaned) as List).map((m) {
-            return Flashcard(question: m['question'], answer: m['answer']);
-          }).toList();
+      List<Flashcard> cards = [];
+
+      try {
+        // Clean markdown fences first
+        final cleaned = raw.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+
+        // Extract all JSON-like objects from the cleaned text
+        final regex = RegExp(r'\{[^{}]+\}', multiLine: true);
+        final matches = regex.allMatches(cleaned);
+
+        for (final match in matches) {
+          final jsonStr = match.group(0);
+          if (jsonStr != null) {
+            final map = jsonDecode(jsonStr);
+            cards.add(
+              Flashcard(
+                question: map['question'] ?? '',
+                answer: map['answer'] ?? '',
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print('❌ Failed to parse individual JSON objects: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("⚠️ AI response was incomplete or malformed."),
+          ),
+        );
+      }
 
       // 5) Update state & show dialog
       setState(() => _generatedFlashcards = cards);

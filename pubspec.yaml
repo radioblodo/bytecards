@@ -33,7 +33,6 @@ dependencies:
   floating_action_bubble: 1.1.4
   file_picker: ^9.0.2 # Pick files
   pdf: ^3.10.4 # Extract text from PDFs
-  flutter_tesseract_ocr: ^0.4.28 # OCR for scanned documents
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -50,6 +49,13 @@ dependencies:
   auto_size_text: ^3.0.0
   flutter_colorpicker: ^1.1.0
   syncfusion_flutter_pdf: ^24.1.46 # For PDF generation and manipulation
+  flutter_secure_storage: ^9.2.4
+  url_launcher: ^6.1.10
+  flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.2
+  android_intent_plus: ^3.0.2
+  device_info_plus: ^10.1.0
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:

@@ -98,12 +98,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
                                 value > 0.5 ? 3.14 : 0,
                               ), // flip the text back when the card has been flipped
                           child: Center(
-                            child: Text(
-                              displayText,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                displayText,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
