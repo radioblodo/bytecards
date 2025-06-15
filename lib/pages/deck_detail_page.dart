@@ -12,7 +12,7 @@ import 'package:bytecards/services/storage_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:read_pdf_text/read_pdf_text.dart';
 
 class DeckDetailScreen extends StatefulWidget {
   final Deck deck;
@@ -48,22 +48,41 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
     }
   }
 
+  // Helper method to preprocess parsed text from read_pdf_text
+  String _preprocessText(String input) {
+    return input
+        .replaceAll(
+          RegExp(r'\s+'),
+          ' ',
+        ) // Collapse all whitespace to single space
+        .replaceAll(RegExp(r'\n\s*\n'), '\n') // Remove double line breaks
+        .replaceAll(
+          RegExp(r'[^\x00-\x7F]'),
+          '',
+        ) // Optional: Remove non-ASCII chars
+        .trim();
+  }
+
   /// 2) Extract text, call AI, parse JSON
   Future<void> _generateFlashcardsFromAI(String filePath, String apiKey) async {
     final loc = AppLocalizations.of(context)!;
     setState(() => _isGenerating = true);
 
+    String rawText;
     String text;
     final ext = filePath.split('.').last.toLowerCase();
 
     // ──  STEP 1: Extract text ─────────────────────────────────
     try {
       if (ext == 'pdf') {
-        print("🛠  Extracting PDF text from $filePath");
-        final bytes = await File(filePath).readAsBytes();
-        final doc = PdfDocument(inputBytes: bytes);
-        text = PdfTextExtractor(doc).extractText();
-        doc.dispose();
+        print("🛠 Extracting PDF text from $filePath");
+        final rawText = await ReadPdfText.getPDFtext(filePath);
+        print("Raw text" + rawText);
+        if (rawText.trim().isEmpty) {
+          throw Exception("PDF appears to be scanned or empty.");
+        }
+        text = _preprocessText(rawText);
+        print("After preprocessing: " + text);
       } else if (ext == 'txt') {
         print("🛠  Reading TXT from $filePath");
         text = await File(filePath).readAsString();

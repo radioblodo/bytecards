@@ -366,27 +366,27 @@ class _SettingsPageState extends State<SettingsPage> {
             if (option == AppLocalizations.of(context)!.daily) {
               frequencyNotifier.value = const Frequency('daily');
               StorageService.saveFrequency('daily');
-              _selectedFrequency = 'daily'; // ✅ Store key
+              _selectedFrequency = 'daily';
               await NotificationService.cancelAllReminders();
-              await NotificationService.checkAndRequestExactAlarmPermission(); // 🛑 Add this line
+              await NotificationService.checkAndRequestExactAlarmPermission();
               await NotificationService.scheduleReminder(
-                const Duration(seconds: 10),
+                const Duration(days: 1),
               );
             } else if (option == AppLocalizations.of(context)!.weekly) {
               frequencyNotifier.value = const Frequency('weekly');
               StorageService.saveFrequency('weekly');
-              _selectedFrequency = 'weekly'; // ✅ Store key
+              _selectedFrequency = 'weekly';
               await NotificationService.cancelAllReminders();
-              await NotificationService.checkAndRequestExactAlarmPermission(); // 🛑 Add this line
+              await NotificationService.checkAndRequestExactAlarmPermission();
               await NotificationService.scheduleReminder(
                 const Duration(days: 7),
               );
             } else if (option == AppLocalizations.of(context)!.monthly) {
               frequencyNotifier.value = const Frequency('monthly');
               StorageService.saveFrequency('monthly');
-              _selectedFrequency = 'monthly'; // ✅ Store key
+              _selectedFrequency = 'monthly';
               await NotificationService.cancelAllReminders();
-              await NotificationService.checkAndRequestExactAlarmPermission(); // 🛑 Add this line
+              await NotificationService.checkAndRequestExactAlarmPermission();
               await NotificationService.scheduleReminder(
                 const Duration(days: 30),
               );
@@ -397,11 +397,11 @@ class _SettingsPageState extends State<SettingsPage> {
             if (option == AppLocalizations.of(context)!.english) {
               localeNotifier.value = const Locale('en');
               StorageService.saveLocale(const Locale('en'));
-              _selectedLanguage = 'english'; // ✅ Store key
+              _selectedLanguage = 'english';
             } else if (option == AppLocalizations.of(context)!.mandarin) {
               localeNotifier.value = const Locale('zh');
               StorageService.saveLocale(const Locale('zh'));
-              _selectedLanguage = 'mandarin'; // ✅ Store key
+              _selectedLanguage = 'mandarin';
             }
             setState(() {});
             break;

@@ -22,6 +22,7 @@ class NotificationService {
 
   /// Call this once before scheduling the first exact alarm
   static Future<void> checkAndRequestExactAlarmPermission() async {
+    // If the device is IOS, skip executing the rest
     if (!Platform.isAndroid) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -57,7 +58,7 @@ class NotificationService {
           ticker: 'ticker',
         ),
       ),
-      androidAllowWhileIdle: true,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: null, // 👈 Do NOT use time/date matching

@@ -89,14 +89,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
-  convert:
-    dependency: transitive
-    description:
-      name: convert
-      sha256: b30acd5944035672bc15c6b7a8b47d773e41e2f17de064350988c5d02adb1c68
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.2"
   cross_file:
     dependency: transitive
     description:
@@ -581,6 +573,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  read_pdf_text:
+    dependency: "direct main"
+    description:
+      name: read_pdf_text
+      sha256: "49e8e81636092789d812e01ffe351d9a4258dbea12fc8acde3c10c059044efab"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -674,14 +674,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.5.5"
-  sqflite_common_ffi:
-    dependency: "direct dev"
-    description:
-      name: sqflite_common_ffi
-      sha256: "1f3ef3888d3bfbb47785cc1dda0dc7dd7ebd8c1955d32a9e8e9dae1e38d1c4c1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.3.5"
   sqflite_darwin:
     dependency: transitive
     description:
@@ -698,14 +690,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
-  sqlite3:
-    dependency: transitive
-    description:
-      name: sqlite3
-      sha256: c0503c69b44d5714e6abbf4c1f51a3c3cc42b75ce785f44404765e4635481d38
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.7.6"
   stack_trace:
     dependency: transitive
     description:
@@ -730,22 +714,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  syncfusion_flutter_core:
-    dependency: transitive
-    description:
-      name: syncfusion_flutter_core
-      sha256: "7666506885ebc8f62bb928ad4588a73e20caaff2b2cf2b2b56f67d98f4113525"
-      url: "https://pub.dev"
-    source: hosted
-    version: "24.2.9"
-  syncfusion_flutter_pdf:
-    dependency: "direct main"
-    description:
-      name: syncfusion_flutter_pdf
-      sha256: a9e85bbfd574bb262733b33494240fda38bfeb58553537560ba4b3f54a31418b
-      url: "https://pub.dev"
-    source: hosted
-    version: "24.2.9"
   synchronized:
     dependency: transitive
     description:
