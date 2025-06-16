@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../database/database_helper.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import '../theme_manager.dart';
 
 class StatisticsPage extends StatefulWidget {
   @override
@@ -72,6 +73,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   // Private method to return the today box widget
   Widget _buildTodayBox(int todayCount) {
+    final loc = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: Card(
@@ -82,15 +84,15 @@ class _StatisticsPageState extends State<StatisticsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Today",
+              Text(
+                loc.today,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               Text(
                 todayCount == 0
-                    ? "You've not reviewed any card today."
-                    : "You've reviewed $todayCount cards today!",
+                    ? loc.noCardsReviewedToday
+                    : loc.cardsReviewedToday(todayCount),
                 style: const TextStyle(fontSize: 16),
               ),
             ],
@@ -102,6 +104,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   // Private method to return the future due box widget
   Widget _buildFutureDueBox(List<int> futureDueData) {
+    final loc = AppLocalizations.of(context)!;
     final futureDueCount = futureDueData.fold(0, (sum, e) => sum + e);
 
     return SizedBox(
@@ -114,8 +117,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Upcoming Reviews",
+              Text(
+                loc.upcomingReviews,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -126,8 +129,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
               const SizedBox(height: 8),
               Text(
                 futureDueCount == 0
-                    ? "No upcoming reviews scheduled yet."
-                    : "$futureDueCount card(s) due soon.",
+                    ? loc.noUpcomingReviews
+                    : loc.upcomingReviewsAmt(futureDueCount),
                 style: const TextStyle(fontSize: 16),
               ),
             ],
@@ -199,6 +202,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   // Private method to return the calendar box widget
   Widget _buildCalendarBox(Map<DateTime, int> heatmapData) {
+    final loc = AppLocalizations.of(context)!;
     // Today's date
     final now = DateTime.now();
 
@@ -233,6 +237,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
       Future.delayed(const Duration(seconds: 2)).then((_) => entry.remove());
     }
 
+    final theme = Theme.of(context);
     return SizedBox(
       width: double.infinity,
       child: Card(
@@ -243,8 +248,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Review Calendar",
+              Text(
+                loc.reviewCalendar,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
@@ -257,7 +262,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   colorMode: ColorMode.color,
                   showColorTip: false,
                   defaultColor: Colors.grey[300]!,
-                  textColor: Colors.black,
+                  textColor: theme.colorScheme.onBackground,
                   colorsets: const {
                     1: Color(0xFFE8F5E9),
                     2: Color(0xFFA5D6A7),
@@ -266,10 +271,11 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   },
                   onClick: (date) {
                     int count = heatmapData[date] ?? 0;
+                    final fmtDate = _fmt(date);
                     final text =
                         count == 0
-                            ? "No reviews on ${_fmt(date)}"
-                            : "$count review(s) on ${_fmt(date)}";
+                            ? loc.noReviewsOnDate(fmtDate)
+                            : loc.reviewsOnDate(count, fmtDate);
 
                     // Get tap position
                     final renderBox = context.findRenderObject() as RenderBox;

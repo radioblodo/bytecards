@@ -51,6 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
       body: FutureBuilder(
@@ -93,8 +94,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
                 _buildSettingsTile(
-                  title: "OpenAI API Key",
-                  subtitle: "Tap to enter your key",
+                  title: loc.aiModelAPIKey,
+                  subtitle: loc.enterAPIKey,
                   icon: Icons.vpn_key,
                   onTap: () {
                     _showApiKeyDialog(context);
@@ -272,7 +273,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder:
               (context, setState) => AlertDialog(
-                title: const Text("Enter Your AI API Key"),
+                title: Text(loc.enterAPIKey),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,14 +316,12 @@ class _SettingsPageState extends State<SettingsPage> {
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("❌ Could not open the link."),
-                              ),
+                              SnackBar(content: Text(loc.failedToOpenLink)),
                             );
                           }
                         },
-                        child: const Text(
-                          "🔗 How to get your API key?",
+                        child: Text(
+                          loc.guideToObtainAPIKey,
                           style: TextStyle(color: Colors.blue),
                         ),
                       ),
@@ -334,16 +333,16 @@ class _SettingsPageState extends State<SettingsPage> {
                     onPressed: () => Navigator.pop(context),
                   ),
                   ElevatedButton(
-                    child: const Text("Save"),
+                    child: Text(loc.save),
                     onPressed: () async {
                       await StorageService.saveProvider(selectedProvider);
                       await StorageService.saveApiKey(
                         _apiKeyController.text.trim(),
                       );
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("✅ API Key Saved")),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(loc.apiKeySaved)));
                     },
                   ),
                 ],

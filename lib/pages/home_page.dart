@@ -100,29 +100,32 @@ class _HomePageState extends State<HomePage>
                     );
                   },
                 ),
-        floatingActionButton: FloatingActionBubble(
-          animation: _animation,
-          onPress: () {
-            _animationController.isCompleted
-                ? _animationController.reverse()
-                : _animationController.forward();
-          },
-          iconColor: Colors.white,
-          iconData: Icons.add,
-          backGroundColor: const Color(0xFF4A45C4),
-          items: [
-            Bubble(
-              title: loc.createDeck,
-              bubbleColor: const Color(0xFF4A45C4),
-              icon: Icons.library_add,
-              iconColor: Colors.white,
-              titleStyle: const TextStyle(fontSize: 16, color: Colors.white),
-              onPress: () {
-                _navigateToCreateDeck();
-                _animationController.reverse();
-              },
-            ),
-          ],
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 76.0),
+          child: FloatingActionBubble(
+            animation: _animation,
+            onPress: () {
+              _animationController.isCompleted
+                  ? _animationController.reverse()
+                  : _animationController.forward();
+            },
+            iconColor: Colors.white,
+            iconData: Icons.add,
+            backGroundColor: const Color(0xFF4A45C4),
+            items: [
+              Bubble(
+                title: loc.createDeck,
+                bubbleColor: const Color(0xFF4A45C4),
+                icon: Icons.library_add,
+                iconColor: Colors.white,
+                titleStyle: const TextStyle(fontSize: 16, color: Colors.white),
+                onPress: () {
+                  _navigateToCreateDeck();
+                  _animationController.reverse();
+                },
+              ),
+            ],
+          ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),

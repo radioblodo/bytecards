@@ -9,6 +9,64 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String reviewsOnDate(int count, String date) =>
+      '$count review${count == 1 ? "" : "s"} on $date';
+
+  @override
+  String noReviewsOnDate(String date) => 'No reviews on $date';
+
+  @override
+  String get reviewCalendar => "Review Calendar";
+
+  @override
+  String upcomingReviewsAmt(int count) => '$count card(s) due soon.';
+
+  @override
+  String get noUpcomingReviews => 'No upcoming reviews scheduled yet';
+
+  @override
+  String get upcomingReviews => "Upcoming Reviews";
+
+  @override
+  String cardsReviewedToday(int count) => 'You’ve reviewed $count cards today!';
+
+  @override
+  String get noCardsReviewedToday => "You've not reviewed any card today.";
+
+  @override
+  String get today => "Today";
+
+  @override
+  String get apiKeySaved => "API Key Saved";
+
+  @override
+  String get failedToOpenLink => "Could not open link";
+
+  @override
+  String get save => "Save";
+
+  @override
+  String get guideToObtainAPIKey => "🔗 How to get your API key?";
+
+  @override
+  String get enterAPIKey => 'Tap to enter API key';
+
+  @override
+  String get aiModelAPIKey => 'AI Model API Key';
+
+  @override
+  String get saveFlashcard => 'Save Flashcard';
+
+  @override
+  String get answer => 'Answer';
+
+  @override
+  String get question => 'Question';
+
+  @override
+  String get addFlashcard => "Add Flashcard";
+
+  @override
   String get createDeck => 'Create a new deck';
 
   @override

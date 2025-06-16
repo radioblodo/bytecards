@@ -9,6 +9,63 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String reviewsOnDate(int count, String date) => '在 $date 已复习 $count 张字卡。';
+
+  @override
+  String noReviewsOnDate(String date) => '在 $date 没有复习记录。';
+
+  @override
+  String get reviewCalendar => '复习日历';
+
+  @override
+  String upcomingReviewsAmt(int count) => '有 $count 张卡片即将到期';
+
+  @override
+  String get noUpcomingReviews => '尚未安排任何即将复习。';
+
+  @override
+  String get upcomingReviews => '即将复习';
+
+  @override
+  String cardsReviewedToday(int count) => '您今天已复习 $count 张字卡！';
+
+  @override
+  String get noCardsReviewedToday => '您今天尚未复习任何字卡。';
+
+  @override
+  String get today => '今日份学习记录';
+
+  @override
+  String get apiKeySaved => '成功保存密钥';
+
+  @override
+  String get failedToOpenLink => '无法打开链接';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get guideToObtainAPIKey => '🔗 如何获取您的 API 密钥？';
+
+  @override
+  String get enterAPIKey => '点击此处输入您的密钥';
+
+  @override
+  String get aiModelAPIKey => 'AI 模型 API 密钥';
+
+  @override
+  String get saveFlashcard => '保存字卡';
+
+  @override
+  String get answer => '答案';
+
+  @override
+  String get question => '问题';
+
+  @override
+  String get addFlashcard => '添加字卡';
+
+  @override
   String get appTitle => '字卡';
 
   @override

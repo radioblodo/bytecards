@@ -243,6 +243,45 @@ abstract class AppLocalizations {
   String get practiceMode;
 
   String get noFlashcardsAvailable;
+
+  String get addFlashcard;
+
+  String get question;
+
+  String get answer;
+
+  String get saveFlashcard;
+
+  String get aiModelAPIKey;
+
+  String get enterAPIKey;
+
+  String get guideToObtainAPIKey;
+
+  String get save;
+
+  String get failedToOpenLink;
+
+  String get apiKeySaved;
+
+  String get today;
+
+  String get noCardsReviewedToday;
+
+  String cardsReviewedToday(int count);
+
+  String get upcomingReviews;
+
+  String get noUpcomingReviews;
+
+  String upcomingReviewsAmt(int count);
+
+  String get reviewCalendar;
+
+  String noReviewsOnDate(String date);
+
+  /// When there were some reviews on a given date:
+  String reviewsOnDate(int count, String date);
 }
 
 class _AppLocalizationsDelegate

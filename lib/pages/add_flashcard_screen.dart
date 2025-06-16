@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'package:bytecards/datamodels/flashcard.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class AddFlashcardScreen extends StatefulWidget {
   final String deckId;
@@ -31,25 +32,26 @@ class _AddFlashcardScreenState extends State<AddFlashcardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Flashcard')),
+      appBar: AppBar(title: Text(loc.addFlashcard)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _questionController,
-              decoration: InputDecoration(labelText: "Question"),
+              decoration: InputDecoration(labelText: loc.question),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _answerController,
-              decoration: InputDecoration(labelText: "Answer"),
+              decoration: InputDecoration(labelText: loc.answer),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveFlashcard,
-              child: const Text("Save Flashcard"),
+              child: Text(loc.saveFlashcard),
             ),
           ],
         ),
