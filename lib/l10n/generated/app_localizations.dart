@@ -282,6 +282,24 @@ abstract class AppLocalizations {
 
   /// When there were some reviews on a given date:
   String reviewsOnDate(int count, String date);
+
+  String get difficultyTitle;
+
+  String get easyLabel;
+
+  String get mediumLabel;
+
+  String get hardLabel;
+
+  String get cardCountsTitle;
+
+  String newCards(int count);
+
+  String youngCards(int count);
+
+  String matureCards(int count);
+
+  String get reviewIntervals;
 }
 
 class _AppLocalizationsDelegate

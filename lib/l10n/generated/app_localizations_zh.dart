@@ -9,6 +9,18 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get difficultyTitle => "难度评级";
+
+  @override
+  String get easyLabel => "简单";
+
+  @override
+  String get mediumLabel => "中等";
+
+  @override
+  String get hardLabel => "困难";
+
+  @override
   String reviewsOnDate(int count, String date) => '在 $date 已复习 $count 张字卡。';
 
   @override
@@ -174,4 +186,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get practiceMode => '练习模式';
+
+  @override
+  // TODO: implement cardCountsTitle
+  String get cardCountsTitle => "字卡数量";
+
+  @override
+  String matureCards(int count) {
+    return "已掌握字卡：$count";
+  }
+
+  @override
+  String newCards(int count) {
+    return "新字卡：$count";
+  }
+
+  @override
+  String youngCards(int count) {
+    return "学习中字卡：$count";
+  }
+
+  @override
+  String get reviewIntervals => "复习分布";
 }

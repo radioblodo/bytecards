@@ -9,6 +9,18 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get difficultyTitle => "Difficulty Reviews";
+
+  @override
+  String get easyLabel => "Easy";
+
+  @override
+  String get mediumLabel => "Medium";
+
+  @override
+  String get hardLabel => "Hard";
+
+  @override
   String reviewsOnDate(int count, String date) =>
       '$count review${count == 1 ? "" : "s"} on $date';
 
@@ -175,4 +187,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceMode => 'Practice Mode';
+
+  @override
+  // TODO: implement cardCountsTitle
+  String get cardCountsTitle => "Card Counts";
+
+  @override
+  String newCards(int count) => 'New: $count';
+
+  @override
+  String youngCards(int count) => 'Young: $count';
+
+  @override
+  String matureCards(int count) => 'Mature: $count';
+
+  @override
+  String get reviewIntervals => "Review Intervals";
 }

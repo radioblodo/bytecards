@@ -273,54 +273,27 @@ class DatabaseHelper {
     return difficultyMap;
   }
 
-  Future<Map<String, int>> getReviewIntervalStats() async {
+  Future<Map<int, int>> getReviewIntervalStats() async {
     final db = await database;
-    final result = await db.rawQuery('''
-      SELECT
-        strftime('%w', review_time) as weekday, 
-        COUNT(*) as count
+    final rows = await db.rawQuery('''
+      SELECT 
+        strftime('%w', review_time) AS w, 
+        COUNT(*) as cnt
       FROM flashcard_reviews
-      GROUP BY weekday
-      ''');
+      GROUP BY w
+    ''');
 
-    Map<String, int> intervalMap = {
-      'Sun': 0,
-      'Mon': 0,
-      'Tue': 0,
-      'Wed': 0,
-      'Thu': 0,
-      'Fri': 0,
-      'Sat': 0,
-    };
+    // Initialize 1..7 → 0
+    final result = <int, int>{for (var i = 1; i <= 7; i++) i: 0};
 
-    for (var row in result) {
-      String weekday = row['weekday'].toString();
-      int count = (row['count'] ?? 0) as int;
-      switch (weekday) {
-        case '0':
-          intervalMap['Sun'] = count;
-          break;
-        case '1':
-          intervalMap['Mon'] = count;
-          break;
-        case '2':
-          intervalMap['Tue'] = count;
-          break;
-        case '3':
-          intervalMap['Wed'] = count;
-          break;
-        case '4':
-          intervalMap['Thu'] = count;
-          break;
-        case '5':
-          intervalMap['Fri'] = count;
-          break;
-        case '6':
-          intervalMap['Sat'] = count;
-          break;
-      }
+    for (final row in rows) {
+      final wSql = int.parse(row['w']?.toString() ?? '0');
+      // SQLite: Sunday=0, Mon=1…Sat=6
+      final weekday = (wSql == 0) ? 7 : wSql;
+      final cnt = (row['cnt'] as num?)?.toInt() ?? 0;
+      result[weekday] = cnt;
     }
 
-    return intervalMap;
+    return result;
   }
 }
