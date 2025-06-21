@@ -2,8 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../database/database_helper.dart';
-import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
-import '../theme_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_heatmap_calendar/simple_heatmap_calendar.dart';
 
@@ -201,11 +199,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
     );
   }
 
-  // Private helper method to format the date
-  String _fmt(DateTime d) {
-    return "${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}";
-  }
-
   /// Builds your review calendar with localized axes (Sun→Sat, Jan→Dec or 日→六, 一月→十二月)
   /// Call this from your build():
   ///   _buildCalendarBox(context, heatmapData)
@@ -231,7 +224,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
     // tooltip helper
     void showTooltip(Offset globalPos, String text) {
-      final overlay = Overlay.of(context)!;
+      final overlay = Overlay.of(context);
       final entry = OverlayEntry(
         builder: (_) {
           return Positioned(

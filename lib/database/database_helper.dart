@@ -110,6 +110,21 @@ class DatabaseHelper {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  Future<void> updateFlashcard(Flashcard flashcard) async {
+    final db = await instance.database;
+    await db.update(
+      'flashcards',
+      flashcard.toMap(),
+      where: 'id = ?',
+      whereArgs: [flashcard.id],
+    );
+  }
+
+  Future<void> deleteFlashcard(int id) async {
+    final db = await instance.database;
+    await db.delete('flashcards', where: 'id = ?', whereArgs: [id]);
+  }
+
   /// Returns all flashcards in that deck, now with their DB `id`.
   Future<List<Flashcard>> getFlashcards(String deckId) async {
     final db = await database;

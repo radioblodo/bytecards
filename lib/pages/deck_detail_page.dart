@@ -29,13 +29,12 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
   /// 1) Open file picker
   void _pickDocument() async {
     final apiKey = await StorageService.loadApiKey();
+    final loc = AppLocalizations.of(context)!;
 
     if (apiKey == null || apiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("❌ Please enter your API key in Settings."),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.pleaseEnterAPIKey)));
       return; // 🛑 stop before file picker
     }
     final result = await FilePicker.platform.pickFiles(
@@ -68,30 +67,24 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
     final loc = AppLocalizations.of(context)!;
     setState(() => _isGenerating = true);
 
-    String rawText;
     String text;
     final ext = filePath.split('.').last.toLowerCase();
 
-    // ──  STEP 1: Extract text ─────────────────────────────────
+    // ── STEP 1: Extract text ───────────────────────────
     try {
       if (ext == 'pdf') {
-        print("🛠 Extracting PDF text from $filePath");
         final rawText = await ReadPdfText.getPDFtext(filePath);
-        print("Raw text" + rawText);
         if (rawText.trim().isEmpty) {
           throw Exception("PDF appears to be scanned or empty.");
         }
         text = _preprocessText(rawText);
-        print("After preprocessing: " + text);
       } else if (ext == 'txt') {
-        print("🛠  Reading TXT from $filePath");
-        text = await File(filePath).readAsString();
+        text = await File(filePath).readAsString(encoding: utf8);
       } else {
         throw FormatException('Unsupported extension: .$ext');
       }
-      print("✅ Extracted text length: ${text.length}");
     } catch (e, st) {
-      debugPrint('❌ Text extraction error: $e\n$st');
+      debugPrint('Text extraction error: $e\n$st');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(loc.fileReadError)));
@@ -99,11 +92,46 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
       return;
     }
 
-    // ──  STEP 2: Call AI endpoint ───────────────────────────────
-    http.Response resp;
+    // ── STEP 2–4: Chunking + AI Calls + Parsing ───────────────
+    List<Flashcard> allCards = [];
+
+    const chunkSize = 2000;
+    final chunks = <String>[];
+    for (int i = 0; i < text.length; i += chunkSize) {
+      chunks.add(
+        text.substring(
+          i,
+          i + chunkSize > text.length ? text.length : i + chunkSize,
+        ),
+      );
+    }
+
+    for (final chunk in chunks) {
+      final chunkCards = await _generateCardsFromChunk(chunk, apiKey);
+      allCards.addAll(chunkCards);
+      if (allCards.length >= 5) break;
+    }
+
+    // ── STEP 5: Show results ────────────────────────────
+    setState(() => _generatedFlashcards = allCards.take(5).toList());
+    if (_generatedFlashcards.isNotEmpty) {
+      _showGeneratedCardsDialog();
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.malformedResponse)));
+    }
+
+    setState(() => _isGenerating = false);
+  }
+
+  Future<List<Flashcard>> _generateCardsFromChunk(
+    String chunk,
+    String apiKey,
+  ) async {
+    final localeCode = Localizations.localeOf(context).languageCode;
     try {
-      print("🛰  Sending to AI…");
-      resp = await http.post(
+      final response = await http.post(
         Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
@@ -119,95 +147,39 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
             },
             {
               'role': 'user',
-              'content':
-                  'Generate 5 flashcards as JSON [{"question":"...","answer":"..."}] from the text below:\n\n$text',
+              'content': '''
+                  Generate 3 flashcards as JSON [{"question":"...","answer":"..."}] from the text below.
+                  The question of the flashcards must be written in ${localeCode == 'zh' ? 'Chinese' : 'English'}.
+
+                  Text:
+                  $chunk
+                  ''',
             },
           ],
         }),
       );
-      print("📬 AI responded: ${resp.statusCode}");
-    } catch (e, st) {
-      debugPrint('❌ HTTP error: $e\n$st');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Network error – please check your connection.'),
-        ),
-      );
-      setState(() => _isGenerating = false);
-      return;
-    }
 
-    // ──  STEP 3: Handle HTTP status ────────────────────────────
-    if (resp.statusCode != 200) {
-      debugPrint('❌ AI API returned ${resp.statusCode}: ${resp.body}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.apiError(resp.statusCode.toString()))),
-      );
-      setState(() => _isGenerating = false);
-      return;
-    }
+      if (response.statusCode != 200) return [];
 
-    // ──  STEP 4: Parse JSON ────────────────────────────────────
-    try {
-      // 1) Pull out the AI’s “message” content
-      final raw = jsonDecode(resp.body)['choices'][0]['message']['content'];
-
-      // 2) Log it so you see exactly what came back
-      print('🔍 Raw AI content:\n$raw');
-
-      // 3) Strip out any Markdown fences (``` or ```json)
-      final cleaned =
-          raw
-              .replaceAll(RegExp(r'^```(?:json)?'), '') // opening
-              .replaceAll(RegExp(r'```$'), '') // closing
+      final rawBody = utf8.decode(response.bodyBytes); // Fix encoding
+      final raw =
+          jsonDecode(rawBody)['choices'][0]['message']['content']
+              .replaceAll(RegExp(r'^```(?:json)?'), '')
+              .replaceAll(RegExp(r'```$'), '')
               .trim();
 
-      // 4) Now parse the cleaned JSON
-      List<Flashcard> cards = [];
-
-      try {
-        // Clean markdown fences first
-        final cleaned = raw.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-
-        // Extract all JSON-like objects from the cleaned text
-        final regex = RegExp(r'\{[^{}]+\}', multiLine: true);
-        final matches = regex.allMatches(cleaned);
-
-        for (final match in matches) {
-          final jsonStr = match.group(0);
-          if (jsonStr != null) {
-            final map = jsonDecode(jsonStr);
-            cards.add(
-              Flashcard(
-                question: map['question'] ?? '',
-                answer: map['answer'] ?? '',
-              ),
-            );
-          }
-        }
-      } catch (e) {
-        print('❌ Failed to parse individual JSON objects: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("⚠️ AI response was incomplete or malformed."),
-          ),
+      final regex = RegExp(r'\{[^{}]+\}', multiLine: true);
+      final matches = regex.allMatches(raw);
+      return matches.map((match) {
+        final map = jsonDecode(match.group(0)!);
+        return Flashcard(
+          question: map['question'] ?? '',
+          answer: map['answer'] ?? '',
         );
-      }
-
-      // 5) Update state & show dialog
-      setState(() => _generatedFlashcards = cards);
-      if (_generatedFlashcards.isNotEmpty) {
-        _showGeneratedCardsDialog();
-      }
-
-      print("✅ Parsed ${cards.length} flashcards");
-    } catch (e, st) {
-      debugPrint('❌ JSON parse error: $e\n$st');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(loc.parseError)));
+      }).toList();
+    } catch (_) {
+      return [];
     }
-    setState(() => _isGenerating = false);
   }
 
   /// 3) Confirm & save to DB
@@ -338,13 +310,22 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
                 return ListTile(
                   title: Text(c.question),
                   subtitle: Text(c.answer),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      setState(() => _generatedFlashcards.removeAt(i));
-                      // refresh the dialog
-                      (context as Element).markNeedsBuild();
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _editFlashcardDialog(i),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() => _generatedFlashcards.removeAt(i));
+                          (context as Element)
+                              .markNeedsBuild(); // Refresh dialog
+                        },
+                      ),
+                    ],
                   ),
                 );
               },
@@ -368,6 +349,54 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _editFlashcardDialog(int index) {
+    final loc = AppLocalizations.of(context)!;
+    final card = _generatedFlashcards[index];
+    final questionController = TextEditingController(text: card.question);
+    final answerController = TextEditingController(text: card.answer);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(loc.editCard),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: questionController,
+                  decoration: InputDecoration(labelText: loc.question),
+                ),
+                TextField(
+                  controller: answerController,
+                  decoration: InputDecoration(labelText: loc.answer),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(loc.cancel),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _generatedFlashcards[index] = Flashcard(
+                      question: questionController.text,
+                      answer: answerController.text,
+                    );
+                  });
+                  Navigator.of(context).pop();
+                  // Refresh the dialog view
+                  (context as Element).markNeedsBuild();
+                },
+                child: Text(loc.save),
+              ),
+            ],
+          ),
     );
   }
 }

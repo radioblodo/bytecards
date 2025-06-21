@@ -300,6 +300,30 @@ abstract class AppLocalizations {
   String matureCards(int count);
 
   String get reviewIntervals;
+
+  String get pleaseEnterAPIKey;
+
+  String get networkError;
+
+  String get malformedResponse;
+
+  String get editCard;
+
+  String get wellDone;
+
+  String get allCardsReviewed;
+
+  String get noCardsInDeck;
+
+  String get back;
+
+  String get editDeck;
+
+  String get deleteDeck;
+
+  String get pickAColor;
+
+  String deckOptions(String deckTitle);
 }
 
 class _AppLocalizationsDelegate

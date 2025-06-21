@@ -24,14 +24,58 @@ class PracticeScreen extends StatefulWidget {
 }
 
 class _PracticeScreenState extends State<PracticeScreen> {
+  late List<Flashcard> _shuffledFlashcards;
   int _currentIndex = 0; // Track current flashcard index
   bool _showAnswer = false; // Toggle question/answer view
   double _smallestFontSize = 16; // Default max font size
 
   @override
+  void initState() {
+    super.initState();
+    _shuffledFlashcards = List.from(widget.flashcards)
+      ..shuffle(); // ✅ Shuffle once
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final flashcard = widget.flashcards[_currentIndex];
-    final totalCards = widget.flashcards.length;
+    final loc = AppLocalizations.of(context)!;
+
+    if (_shuffledFlashcards.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF4A45C4),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    loc.noCardsInDeck, // Localize this string
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
+                    label: Text(loc.back),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF4A45C4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final flashcard = _shuffledFlashcards[_currentIndex];
+    final totalCards = _shuffledFlashcards.length;
     final progress = (_currentIndex + 1) / totalCards;
 
     return Scaffold(
@@ -247,7 +291,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   void _rateFlashcard(int difficulty) async {
-    final card = widget.flashcards[_currentIndex];
+    final card = _shuffledFlashcards[_currentIndex];
 
     // 🔥 Here’s the magic: card.id must be non-null
     if (card.id != null) {
@@ -259,7 +303,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     }
 
     setState(() {
-      if (_currentIndex < widget.flashcards.length - 1) {
+      if (_currentIndex < _shuffledFlashcards.length - 1) {
         _currentIndex++;
         _showAnswer = false;
       } else {
@@ -270,12 +314,13 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   // Show completion message when all cards are done
   void _showCompletionDialog() {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text("Well Done!"),
-            content: const Text("You've reviewed all flashcards in this deck."),
+            title: Text(loc.wellDone),
+            content: Text(loc.allCardsReviewed),
             actions: [
               TextButton(
                 onPressed: () {

@@ -21,10 +21,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hardLabel => "困难";
 
   @override
-  String reviewsOnDate(int count, String date) => '在 $date 已复习 $count 张字卡。';
+  String reviewsOnDate(int count, String date) => '在 $date 已复习 $count 张字卡';
 
   @override
-  String noReviewsOnDate(String date) => '在 $date 没有复习记录。';
+  String noReviewsOnDate(String date) => '在 $date 没有复习记录';
 
   @override
   String get reviewCalendar => '复习日历';
@@ -42,7 +42,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String cardsReviewedToday(int count) => '您今天已复习 $count 张字卡！';
 
   @override
-  String get noCardsReviewedToday => '您今天尚未复习任何字卡。';
+  String get noCardsReviewedToday => '您今天尚未复习任何字卡';
 
   @override
   String get today => '今日份学习记录';
@@ -132,10 +132,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemDefault => '系统默认';
 
   @override
-  String get noDecksMessage => "您还没有创建任何字卡。点击 + 创建一个。";
+  String get noDecksMessage => "您还没有创建任何字卡。点击 + 创建一个";
 
   @override
-  String get statisticsDescription => '查看您的学习进度和统计数据，以便更好地了解您的学习习惯。';
+  String get statisticsDescription => '查看您的学习进度和统计数据，以便更好地了解您的学习习惯';
 
   @override
   String get generateFromAI => '从 AI 生成';
@@ -156,7 +156,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unsupportedFormat => '不支持的文件格式';
 
   @override
-  String get parseError => '解析错误，请检查文件格式是否正确。';
+  String get parseError => '解析错误，请检查文件格式是否正确';
 
   @override
   String apiError(String error) {
@@ -208,4 +208,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reviewIntervals => "复习分布";
+
+  @override
+  String get pleaseEnterAPIKey => "请在设置输入你的密钥";
+
+  @override
+  String get networkError => '网络错误，请检查您的连接';
+
+  @override
+  String get malformedResponse => "AI响应不完整或格式错误";
+
+  @override
+  String get editCard => "修改字卡";
+
+  @override
+  String get wellDone => "真棒";
+
+  @override
+  String get allCardsReviewed => "你已经复习完这个卡组中的所有字卡了";
+
+  @override
+  String get noCardsInDeck => "此组字卡还没有字卡，请先加入字卡";
+
+  @override
+  String get back => "返回";
+
+  @override
+  String get editDeck => '修改这组字卡';
+
+  @override
+  String get deleteDeck => "删除这组字卡";
+
+  @override
+  String get pickAColor => "选择一个颜色";
+
+  @override
+  String deckOptions(String deckTitle) => "$deckTitle 的选项";
 }

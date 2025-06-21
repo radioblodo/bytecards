@@ -43,7 +43,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String cardsReviewedToday(int count) => 'You’ve reviewed $count cards today!';
 
   @override
-  String get noCardsReviewedToday => "You've not reviewed any card today.";
+  String get noCardsReviewedToday => "You've not reviewed any card today";
 
   @override
   String get today => "Today";
@@ -142,11 +142,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get systemDefault => 'System Default';
 
   @override
-  String get noDecksMessage => 'You have no decks yet. Tap + to create one.';
+  String get noDecksMessage => 'You have no decks yet. Tap + to create one';
 
   @override
   String get statisticsDescription =>
-      'View your learning progress and statistics.';
+      'View your learning progress and statistics';
 
   @override
   String get generateFromAI => 'Generate from AI';
@@ -164,17 +164,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmAddAll => 'Confirm Add All Cards';
 
   @override
-  String get unsupportedFormat => 'Unsupported format. Please use JSON format.';
+  String get unsupportedFormat => 'Unsupported format. Please use JSON format';
 
   @override
-  String get parseError => 'Error parsing the response. Please try again.';
+  String get parseError => 'Error parsing the response. Please try again';
 
   @override
   String get fileReadError =>
-      'Error reading file. Please check the file format.';
+      'Error reading file. Please check the file format';
 
   @override
-  String apiError(String error) => 'An error occurred. Please try again.';
+  String apiError(String error) => 'An error occurred. Please try again';
 
   @override
   String get cancel => 'Cancel';
@@ -183,7 +183,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flashcards => 'flashcards';
 
   @override
-  String get noFlashcardsAvailable => 'No flashcards available.';
+  String get noFlashcardsAvailable => 'No flashcards available';
 
   @override
   String get practiceMode => 'Practice Mode';
@@ -203,4 +203,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewIntervals => "Review Intervals";
+
+  @override
+  String get pleaseEnterAPIKey => "Please enter your API key in Settings";
+
+  @override
+  String get networkError => 'Network error please check your connection';
+
+  @override
+  String get malformedResponse => "AI response was incomplete or malformed";
+
+  @override
+  String get editCard => "Edit the card";
+
+  @override
+  String get wellDone => "Well done";
+
+  @override
+  String get allCardsReviewed => "You've reviewed all flashcards in this deck";
+
+  @override
+  String get noCardsInDeck =>
+      "There are no flashcards in this deck. Please add some before practicing.";
+
+  @override
+  String get back => "Back";
+
+  @override
+  String get editDeck => "Edit Deck";
+
+  @override
+  String get deleteDeck => "Delete Deck";
+
+  @override
+  String get pickAColor => "Pick a color";
+
+  @override
+  String deckOptions(String deckTitle) => "Options for $deckTitle";
 }

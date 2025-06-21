@@ -76,20 +76,14 @@ class NotificationService {
       if (androidInfo.version.sdkInt >= 33) {
         final status = await Permission.notification.request();
         if (!status.isGranted) {
-          print("❌ Notification permission denied.");
           return;
-        } else {
-          print("✅ Notification permission granted.");
-        }
+        } else {}
       }
 
       if (androidInfo.version.sdkInt >= 31) {
         final status = await Permission.scheduleExactAlarm.status;
         if (!status.isGranted) {
-          print("⚠️ SCHEDULE_EXACT_ALARM not granted.");
-        } else {
-          print("✅ Exact alarm permission granted.");
-        }
+        } else {}
       }
     }
   }

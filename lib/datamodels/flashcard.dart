@@ -41,4 +41,12 @@ class Flashcard {
       difficulty: map['difficulty'] as int?,
     );
   }
+
+  Flashcard copyWith({int? id, String? question, String? answer}) {
+    return Flashcard(
+      id: id ?? this.id,
+      question: question ?? this.question,
+      answer: answer ?? this.answer,
+    );
+  }
 }

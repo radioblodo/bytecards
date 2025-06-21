@@ -1,5 +1,6 @@
 import 'package:bytecards/datamodels/deck.dart';
 import 'package:bytecards/pages/deck_detail_page.dart';
+import 'package:bytecards/pages/edit_deck_page.dart';
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:bytecards/database/database_helper.dart';
@@ -133,36 +134,37 @@ class _HomePageState extends State<HomePage>
   }
 
   void _showDeckOptionsDialog(BuildContext context, Deck deck) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text("Options for ${deck.title}"),
+            title: Text(loc.deckOptions(deck.title)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
                   leading: const Icon(Icons.edit),
-                  title: const Text("Edit Deck"),
+                  title: Text(loc.editDeck),
                   onTap: () {
                     Navigator.pop(context);
                     _editDeck(deck);
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text("Delete Deck"),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _deleteDeck(deck);
-                  },
-                ),
-                ListTile(
                   leading: const Icon(Icons.palette),
-                  title: const Text("Choose a color"),
+                  title: Text(loc.pickAColor),
                   onTap: () {
                     Navigator.pop(context);
                     _showColorPickerDialog(context, deck);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: Text(loc.deleteDeck),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deleteDeck(deck);
                   },
                 ),
               ],
@@ -172,8 +174,10 @@ class _HomePageState extends State<HomePage>
   }
 
   void _editDeck(Deck deck) {
-    print("Editing ${deck.title}");
-    // TODO: Implement navigation to edit screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditDeckScreen(deck: deck)),
+    );
   }
 
   void _deleteDeck(Deck deck) async {
@@ -185,11 +189,12 @@ class _HomePageState extends State<HomePage>
   }
 
   void _showColorPickerDialog(BuildContext context, Deck deck) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Select Deck Color"),
+          title: Text(loc.pickAColor),
           content: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -226,11 +231,7 @@ class _HomePageState extends State<HomePage>
         margin: const EdgeInsets.symmetric(horizontal: 4.0),
         width: 40,
         height: 40,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.black, width: 1),
-        ),
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       ),
     );
   }

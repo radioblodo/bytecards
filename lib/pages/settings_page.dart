@@ -8,9 +8,6 @@ import 'package:bytecards/enum/setting_type.dart';
 import 'package:bytecards/l10n/generated/app_localizations.dart';
 import 'package:bytecards/services/storage_service.dart';
 import 'package:bytecards/services/notification_service.dart';
-import 'package:android_intent_plus/android_intent.dart';
-import 'dart:io';
-import 'package:device_info_plus/device_info_plus.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -62,9 +59,17 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 _buildSettingsTile(
                   title: AppLocalizations.of(context)!.reminderFrequency,
-                  subtitle: _getLocalizedLanguage(
-                    _selectedFrequency,
-                    context,
+                  subtitle: ValueListenableBuilder<Frequency>(
+                    valueListenable: frequencyNotifier,
+                    builder: (context, frequency, _) {
+                      return Text(
+                        _getLocalizedFrequency(frequency.code, context),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
                   ), // Localize here
                   icon: Icons.notifications,
                   onTap: () {
@@ -73,9 +78,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 _buildSettingsTile(
                   title: AppLocalizations.of(context)!.language,
-                  subtitle: _getLocalizedLanguage(
-                    _selectedLanguage,
-                    context,
+                  subtitle: Text(
+                    _getLocalizedLanguage(_selectedLanguage, context),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ), // Localize here
                   icon: Icons.language,
                   onTap: () {
@@ -84,9 +89,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 _buildSettingsTile(
                   title: AppLocalizations.of(context)!.appTheme,
-                  subtitle: _getLocalizedLanguage(
-                    _selectedAppTheme,
-                    context,
+                  subtitle: Text(
+                    _getLocalizedLanguage(_selectedAppTheme, context),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ), // Localize here
                   icon: Icons.palette,
                   onTap: () {
@@ -95,7 +100,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 _buildSettingsTile(
                   title: loc.aiModelAPIKey,
-                  subtitle: loc.enterAPIKey,
+                  subtitle: Text(loc.enterAPIKey),
                   icon: Icons.vpn_key,
                   onTap: () {
                     _showApiKeyDialog(context);
@@ -111,6 +116,19 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
     );
+  }
+
+  String _getLocalizedFrequency(String code, BuildContext context) {
+    switch (code) {
+      case 'daily':
+        return AppLocalizations.of(context)!.daily;
+      case 'weekly':
+        return AppLocalizations.of(context)!.weekly;
+      case 'monthly':
+        return AppLocalizations.of(context)!.monthly;
+      default:
+        return '';
+    }
   }
 
   String _getLocalizedLanguage(String key, BuildContext context) {
@@ -138,7 +156,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildSettingsTile({
     required String title,
-    required String subtitle,
+    required Widget subtitle,
     required IconData icon,
     required VoidCallback onTap,
   }) {
@@ -148,10 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
         title,
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(fontSize: 14, color: Colors.grey),
-      ),
+      subtitle: subtitle,
       trailing: const Icon(
         Icons.arrow_forward_ios,
         size: 16,

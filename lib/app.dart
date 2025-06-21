@@ -279,18 +279,13 @@ class _MainScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    final titles = [
-      loc?.home ?? 'Home',
-      loc?.statistics ?? 'Statistics',
-      loc?.settings ?? 'Settings',
-    ];
+    AppLocalizations.of(context);
     final icons = [Icons.home, Icons.bar_chart, Icons.settings];
 
     final theme = Theme.of(context);
     final bgColor =
         theme.brightness == Brightness.light
-            ? const Color.fromARGB(255, 224, 224, 224)
+            ? const Color.fromARGB(245, 225, 225, 225)
             : Colors.grey[850]!;
     final accentColor = const Color(0xFF4A45C4);
     return Scaffold(

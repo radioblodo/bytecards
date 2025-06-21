@@ -14,6 +14,7 @@ class AddFlashcardScreen extends StatefulWidget {
 class _AddFlashcardScreenState extends State<AddFlashcardScreen> {
   final TextEditingController _questionController = TextEditingController();
   final TextEditingController _answerController = TextEditingController();
+  final FocusNode _questionFocusNode = FocusNode();
 
   void _saveFlashcard() async {
     final question = _questionController.text.trim();
@@ -26,8 +27,9 @@ class _AddFlashcardScreenState extends State<AddFlashcardScreen> {
       widget.deckId,
     );
 
-    // Now you know the DB row ID, you could even pass it back:
-    Navigator.pop(context);
+    _questionController.clear();
+    _answerController.clear();
+    FocusScope.of(context).requestFocus(_questionFocusNode);
   }
 
   @override
@@ -41,6 +43,7 @@ class _AddFlashcardScreenState extends State<AddFlashcardScreen> {
           children: [
             TextField(
               controller: _questionController,
+              focusNode: _questionFocusNode,
               decoration: InputDecoration(labelText: loc.question),
             ),
             const SizedBox(height: 20),
